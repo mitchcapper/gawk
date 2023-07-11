@@ -54,8 +54,9 @@ MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # On Cygwin, gettext requires that we link with -lintl
 MY_LIBS = $(LTLIBINTL)
 
-filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h \
-			gawkfts.c gawkdirfd.h
+#  gawkfts.h gawkfts.c 
+filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c \
+			gawkdirfd.h
 filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)
 filefuncs_la_LIBADD   = $(MY_LIBS)
 

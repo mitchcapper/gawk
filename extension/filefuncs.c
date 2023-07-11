@@ -96,7 +96,7 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
-#include "gawkfts.h"
+//#include "gawkfts.h"
 #include "stack.h"
 
 #ifndef S_IFLNK

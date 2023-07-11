@@ -54,7 +54,7 @@
 
 #if !defined(__SUNPRO_C)
 #if !defined(__STDC__) || __STDC__ < 1
-#error "gawk no longer supports non-C89 environments (no __STDC__ or __STDC__ < 1)"
+// #error "gawk no longer supports non-C89 environments (no __STDC__ or __STDC__ < 1)"
 #endif
 #endif
 
@@ -1552,9 +1552,11 @@ extern void set_CONVFMT(void);
 extern void set_BINMODE(void);
 extern void set_LINT(void);
 extern void set_TEXTDOMAIN(void);
+#ifndef _WIN32
 extern void update_ERRNO_int(int);
 extern void update_ERRNO_string(const char *string);
 extern void unset_ERRNO(void);
+#endif
 extern void update_NR(void);
 extern void update_NF(void);
 extern void update_FNR(void);
@@ -1650,9 +1652,11 @@ extern int isdirpunct(int c);
 extern void init_sockets(void);
 extern void init_io(void);
 extern void init_csv_records(void);
+#ifndef _WIN32
 extern void register_input_parser(awk_input_parser_t *input_parser);
 extern void register_output_wrapper(awk_output_wrapper_t *wrapper);
 extern void register_two_way_processor(awk_two_way_processor_t *processor);
+#endif
 extern void set_FNR(void);
 extern void set_NR(void);
 

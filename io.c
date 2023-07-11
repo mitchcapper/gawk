@@ -23,6 +23,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "config.h"
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+#define __MINGW32__
+#endif
 
 #include "awk.h"
 
@@ -30,7 +36,7 @@
 #undef RE_DUP_MAX	/* avoid spurious conflict w/regex.h */
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
-#ifdef HAVE_SYS_IOCTL_H
+#if defined(HAVE_SYS_IOCTL_H) || defined(_WIN32)
 #include <sys/ioctl.h>
 #endif /* HAVE_SYS_IOCTL_H */
 
@@ -53,9 +59,9 @@
 #include <stropts.h>
 #endif
 
-#ifdef HAVE_SOCKETS
+#if defined(HAVE_SOCKETS) || defined(_WIN32)
 
-#ifdef HAVE_SYS_SOCKET_H
+#if defined(HAVE_SYS_SOCKET_H) || defined(_WIN32)
 #include <sys/socket.h>
 #else
 #include <socket.h>
@@ -69,14 +75,16 @@
 #endif
 
 #else /* ! HAVE_NETINET_IN_H */
+#ifndef _WIN32
 #include <in.h>
+#endif
 #endif /* HAVE_NETINET_IN_H */
 
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
 
-#ifdef HAVE_SYS_SELECT_H
+#if defined(HAVE_SYS_SELECT_H) || defined(_WIN32)
 #include <sys/select.h>
 #endif	/* HAVE_SYS_SELECT_H */
 
@@ -111,6 +119,9 @@
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
 #endif
+#ifdef _WIN32
+#include <stdio.h>
+#endif
 
 #ifndef ENFILE
 #define ENFILE EMFILE
@@ -124,7 +135,11 @@
 #include <rmsdef.h>
 #define closemaybesocket(fd)	close(fd)
 #endif
-
+#ifdef _WIN32
+#define SIGKILL 999
+#define SIGHUP 999
+#define SIGQUIT 999
+#endif
 #ifdef HAVE_SOCKETS
 
 #ifndef SHUT_RD
@@ -259,7 +274,8 @@ static bool find_output_wrapper(awk_output_buf_t *outbuf);
 static void init_output_wrapper(awk_output_buf_t *outbuf);
 static bool find_two_way_processor(const char *name, struct redirect *rp);
 static bool avoid_flush(const char *name);
-
+static SOCKET valid_socket(int fd);
+static char* quote_cmd(const char* cmd);
 static RECVALUE rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
 static RECVALUE rsnullscan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
 static RECVALUE rsrescan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
@@ -2563,7 +2579,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 	int pid;
 	int status = 0;
 	struct redirect *redp;
-#ifdef HAVE_SIGPROCMASK
+#if defined(HAVE_SIGPROCMASK) && ! defined(_WIN32)
 	sigset_t set, oldset;
 
 	/* I have no idea why we are blocking signals during this function... */
@@ -2598,7 +2614,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 	qstat = signal(SIGQUIT, SIG_IGN);
 #endif
 	for (;;) {
-# if defined(HAVE_WAITPID) && defined(WNOHANG)
+# if (defined(HAVE_WAITPID) || defined(_WIN32)) && defined(WNOHANG)
 		/*
 		 * N.B. If the caller wants status for a specific child process
 		 * (i.e. interesting is non-zero), then we must hang until we
@@ -2639,7 +2655,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 }
 
 /* gawk_popen --- open an IOBUF on a child process */
-
+#define __MINGW32__
 static IOBUF *
 gawk_popen(const char *cmd, struct redirect *rp)
 {
