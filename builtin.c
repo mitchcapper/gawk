@@ -23,13 +23,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-
+#ifdef _WIN32
+#include "config.h"
+#include "osfixes.h"
+#endif
 
 #include "awk.h"
-#if defined(HAVE_FCNTL_H)
+
+
+#if defined(HAVE_FCNTL_H) || defined(_WIN32)
 #include <fcntl.h>
 #endif
+#ifndef _WIN32
 #include "random.h"
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#include "sys/random.h"
+#endif
 
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
@@ -62,10 +73,10 @@
 #endif
 
 /* Can declare these, since we always use the random shipped with gawk */
-extern char *initstate(unsigned long seed, char *state, long n);
-extern char *setstate(char *state);
-extern long random(void);
-extern void srandom(unsigned long seed);
+// extern char *initstate(unsigned long seed, char *state, long n);
+// extern char *setstate(char *state);
+// extern long random(void);
+// extern void srandom(unsigned long seed);
 
 extern NODE **args_array;
 extern int max_args;
