@@ -24165,7 +24165,9 @@ Following is @command{pwcat}, a C program that ``cats'' the password database:
 @end ignore
 @c file eg/lib/pwcat.c
 #include <stdio.h>
+#ifndef _WIN32
 #include <pwd.h>
+#endif
 
 @c endfile
 @ignore
@@ -24181,7 +24183,7 @@ int
 main(int argc, char **argv)
 @{
     struct passwd *p;
-
+#ifndef _WIN32
     while ((p = getpwent()) != NULL)
 @c endfile
 @ignore
@@ -24206,6 +24208,7 @@ main(int argc, char **argv)
 @c file eg/lib/pwcat.c
 
     endpwent();
+#endif    
     return 0;
 @}
 @c endfile
