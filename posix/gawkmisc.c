@@ -25,6 +25,12 @@
 #endif
 #include <io.h>		/* for declaration of setmode(). */
 #endif
+#ifdef _WIN32
+#include "config.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif // _WIN32
+#include "filename.h"
 
 const char quote = '\'';
 const char *defpath = DEFPATH;
@@ -44,7 +50,7 @@ gawk_name(const char *filespec)
 	const char *p;
 
 	/* "path/name" -> "name" */
-	p = strrchr(filespec, '/');
+	p = LAST_SLASH_IN_PATH(filespec);
 	return (p == NULL ? (char *) filespec : p + 1);
 }
 
@@ -149,7 +155,7 @@ optimal_bufsize(int fd, struct stat *stb)
 int
 ispath(const char *file)
 {
-	return (strchr(file, '/') != NULL);
+	return (LAST_SLASH_IN_PATH(file) != NULL);
 }
 
 /* isdirpunct --- return true if char is a directory separator */
@@ -157,7 +163,7 @@ ispath(const char *file)
 int
 isdirpunct(int c)
 {
-	return (c == '/');
+	return ISSLASH(c);
 }
 
 /* os_close_on_exec --- set close on exec flag, print warning if fails */
@@ -169,7 +175,7 @@ os_close_on_exec(int fd, const char *name, const char *what, const char *dir)
 
 	if (fd <= 2)	/* sanity */
 		return;
-
+#ifndef _WIN32 //todo fixme cant just ignore this 
 	/*
 	 * Per POSIX, use Read/Modify/Write - get the flags,
 	 * add FD_CLOEXEC, set the flags back.
@@ -190,6 +196,7 @@ os_close_on_exec(int fd, const char *name, const char *what, const char *dir)
 	if (fcntl(fd, F_SETFD, curflags) < 0)
 		warning(_("%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"),
 			what, dir, name, strerror(errno));
+#endif			
 }
 
 /* os_isdir --- is this an fd on a directory? */
@@ -240,11 +247,14 @@ int
 os_is_setuid()
 {
 	long uid, euid;
-
+#ifndef _WIN32
 	uid = getuid();
 	euid = geteuid();
 
 	return (euid == 0 && euid != uid);
+#else
+	return 0;
+#endif	
 }
 
 /* os_setbinmode --- set binary mode on file */

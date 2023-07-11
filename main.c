@@ -1068,10 +1068,10 @@ load_procinfo()
 #else
 #define getpgrp_arg() getpid()
 #endif
-
+#ifndef _WIN32
 	value = getpgrp(getpgrp_arg());
 	update_PROCINFO_num("pgrpid", value);
-
+#endif
 	/*
 	 * Could put a lot of this into a table, but then there's
 	 * portability problems declaring all the functions. So just
@@ -1080,7 +1080,7 @@ load_procinfo()
 
 	value = getpid();
 	update_PROCINFO_num("pid", value);
-
+#ifndef _WIN32
 	value = getppid();
 	update_PROCINFO_num("ppid", value);
 
@@ -1095,7 +1095,7 @@ load_procinfo()
 
 	value = getegid();
 	update_PROCINFO_num("egid", value);
-
+#endif
 	update_PROCINFO_str("FS", current_field_sep_str());
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
