@@ -4712,3 +4712,33 @@ gawk_popen_write_close(FILE *fp)
 	return -1;
 #endif
 }
+
+#ifdef  _WIN32
+
+
+static char* quote_cmd(const char* cmd)
+{
+	char* quoted;
+
+	/* The command will be invoked via cmd.exe, whose behavior wrt
+	   quoted commands is to remove the first and the last quote
+	   characters, and leave the rest (including any quote characters
+	   inside the outer pair) intact.  */
+	quoted = malloc(strlen(cmd) + 2 + 1);
+	sprintf(quoted, "\"%s\"", cmd);
+
+	return quoted;
+}
+static SOCKET valid_socket(int fd)
+{
+	SOCKET s = FD_TO_SOCKET(fd);
+	int ov, ol = 4;
+
+	if (s == INVALID_SOCKET
+		|| (getsockopt(s, SOL_SOCKET, SO_TYPE, (char*)&ov, &ol) == SOCKET_ERROR
+			&& WSAGetLastError() == WSAENOTSOCK))
+		return (SOCKET)0;
+	return s;
+}
+
+#endif //  _WIN32
