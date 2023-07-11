@@ -107,6 +107,8 @@ AC_PROG_EGREP
 AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC
+gl_EARLY
+
 AC_C_VARARRAYS
 AC_PROG_CPP
 AC_PROG_RANLIB
@@ -122,7 +124,7 @@ AM_PROG_AR
 
 ARFLAGS=cru		# set default
 AC_SUBST(AR)
-
+gl_INIT
 # This is mainly for my use during testing and development.
 # Yes, it's a bit of a hack.
 # Keep in sync with same code in extension/configure.ac
@@ -179,8 +181,8 @@ dnl this only needs to be set once, since everything is in C.
 AC_LANG([C])
 
 dnl initialize GNU gettext
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.20.2])
+#AM_GNU_GETTEXT([external])
+#AM_GNU_GETTEXT_VERSION([0.20.2])
 AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
@@ -247,50 +249,50 @@ dnl types for the argument to getsockopt, getpeername, etc.  So we
 dnl have to test to find something that will work.
 
 dnl This is no good, because passing the wrong pointer on C compilers is
-dnl likely to only generate a warning, not an error.
+# dnl likely to only generate a warning, not an error.
 
-AC_DEFUN([TYPE_SOCKLEN_T],
-[
-   AC_CHECK_TYPE([socklen_t], ,[
-      AC_MSG_CHECKING([for socklen_t equivalent])
-      AC_CACHE_VAL([rsync_cv_socklen_t_equiv],
-      [
-         # Systems have either "struct sockaddr *" or
-         # "void *" as the second argument to getpeername
-         rsync_cv_socklen_t_equiv=
-         for arg2 in "struct sockaddr" void
-	 do
-            for t in int size_t unsigned long "unsigned long"
-	    do
-               AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <sys/types.h>
-#include <sys/socket.h>
+# AC_DEFUN([TYPE_SOCKLEN_T],
+# [
+#    AC_CHECK_TYPE([socklen_t], ,[
+#       AC_MSG_CHECKING([for socklen_t equivalent])
+#       AC_CACHE_VAL([rsync_cv_socklen_t_equiv],
+#       [
+#          # Systems have either "struct sockaddr *" or
+#          # "void *" as the second argument to getpeername
+#          rsync_cv_socklen_t_equiv=
+#          for arg2 in "struct sockaddr" void
+# 	 do
+#             for t in int size_t unsigned long "unsigned long"
+# 	    do
+#                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+# #include <sys/types.h>
+# #include <sys/socket.h>
 
-                  int getpeername (int, $arg2 *, $t *);
-               ]], [[
-                  $t len;
-                  getpeername(0,0,&len);
-               ]])],[
-                  rsync_cv_socklen_t_equiv="$t"
-                  break
-               ],[])
-            done
-         done
+#                   int getpeername (int, $arg2 *, $t *);
+#                ]], [[
+#                   $t len;
+#                   getpeername(0,0,&len);
+#                ]])],[
+#                   rsync_cv_socklen_t_equiv="$t"
+#                   break
+#                ],[])
+#             done
+#          done
 
-         if test "$rsync_cv_socklen_t_equiv" = ""
-	 then
-dnl		Some systems get this. Default to int.  -- ADR
-dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
-		rsync_cv_socklen_t_equiv=int
-         fi
-      ])
-      AC_MSG_RESULT($rsync_cv_socklen_t_equiv)
-      AC_DEFINE_UNQUOTED(socklen_t, $rsync_cv_socklen_t_equiv,
-			[type to use in place of socklen_t if not defined])],
-      [#include <sys/types.h>
-#include <sys/socket.h>])
-])
-TYPE_SOCKLEN_T
+#          if test "$rsync_cv_socklen_t_equiv" = ""
+# 	 then
+# dnl		Some systems get this. Default to int.  -- ADR
+# dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
+# 		rsync_cv_socklen_t_equiv=int
+#          fi
+#       ])
+#       AC_MSG_RESULT($rsync_cv_socklen_t_equiv)
+#       AC_DEFINE_UNQUOTED(socklen_t, $rsync_cv_socklen_t_equiv,
+# 			[type to use in place of socklen_t if not defined])],
+#       [#include <sys/types.h>
+# #include <sys/socket.h>])
+# ])
+# TYPE_SOCKLEN_T
 
 dnl Check for C11 _Noreturn
 GAWK_AC_NORETURN
@@ -480,10 +482,12 @@ dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool us
 *) GAWKLIBEXT=$acl_shlibext ;;
 esac
 AC_SUBST(GAWKLIBEXT)
-
+# support/Makefile
 AC_CONFIG_FILES([Makefile
-	support/Makefile
+	
 	awklib/Makefile
+	m4/Makefile
+	lib/Makefile
 	doc/Makefile
 	extras/Makefile
 	po/Makefile.in
@@ -511,11 +515,11 @@ w
 EOF
 		done
 	fi
-	for i in . support extension
-	do
-		sed -e '/-O2/s///' -e '/^CFLAGS = /s//&${DEBUG} /' $i/Makefile > foo
-		mv foo $i/Makefile
-	done
+#	for i in . support extension
+#	do
+#		sed -e '/-O2/s///' -e '/^CFLAGS = /s//&${DEBUG} /' $i/Makefile > foo
+#		mv foo $i/Makefile
+#	done
 elif test "$GCC" = yes
 then
 	for i in . support extension

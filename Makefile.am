@@ -26,9 +26,11 @@
 # This variable insures that aclocal runs
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
-
-AM_CFLAGS = @CFLAGS@
-AM_LDFLAGS = @LDFLAGS@
+AUTOMAKE_OPTIONS = foreign
+topdir = @top_srcdir@
+AM_CFLAGS = @CFLAGS@ -I$(topdir)/lib
+AM_LDFLAGS = @LDFLAGS@ lib/libgawk.a
+AM_CPPFLAGS = -I$(topdir)/lib
 
 # Stuff to include in the dist that doesn't need it's own
 # Makefile.am files
@@ -55,7 +57,8 @@ EXTRA_DIST = \
 #
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
-SUBDIRS = support .
+    SUBDIRS = m4 lib .
+#support 
 
 # Build in extension before test so that
 # 	./configure && make check
@@ -72,7 +75,7 @@ SUBDIRS += extras doc awklib po test
 bin_PROGRAMS = gawk
 bin_SCRIPTS = gawkbug
 include_HEADERS = gawkapi.h
-BUILT_SOURCES = $(srcdir)/pc/Makefile.tst
+# BUILT_SOURCES = $(srcdir)/pc/Makefile.tst
 
 # sources for gawk
 base_sources = \
@@ -109,12 +112,15 @@ base_sources = \
 	replace.c \
 	str_array.c \
 	symbol.c \
+	osfixes.c \
+	wlb_debug.c \
 	version.c
 
 gawk_SOURCES = $(base_sources)
 
+#  support/libsupport.a
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = support/libsupport.a \
+LDADD = \
 	$(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) $(LIBREADLINE) $(LIBMPFR) \
 	$(LDFLAGS)
 
@@ -128,7 +134,8 @@ DEFPATH='".$(PATH_SEPARATOR)$(pkgdatadir)"'
 SHLIBEXT = "\"$(GAWKLIBEXT)"\"
 DEFLIBPATH="\"$(pkgextensiondir)\""
 
-DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"' -I"$(srcdir)/support"
+DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'
+# -I"$(srcdir)/support"
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.* $(bin_SCRIPTS)
@@ -184,8 +191,8 @@ dist-hook:
 	sed -f /tmp/tmp.sed < /tmp/config.tmp > config.h ; \
 	$(RM) /tmp/tmp.sed /tmp/config.tmp
 	pwd
-	chmod u+w "$(distdir)"/pc/config.h
-	cp "$(srcdir)"/pc/config.h "$(distdir)"/pc/config.h
+#	chmod u+w "$(distdir)"/pc/config.h
+#	cp "$(srcdir)"/pc/config.h "$(distdir)"/pc/config.h
 
 # Special rules for individual files
 
@@ -197,10 +204,10 @@ $(srcdir)/command.c: command.y
 	$(YACC) -o $@ -p zz $<
 	sed 's/parse error/syntax error/g' < $@ > $@.tmp && mv $@.tmp $@
 
-$(srcdir)/pc/Makefile.tst: test/Makefile.in pc/Makefile.tst.prologue pc/GenMakefileTst.awk
-	$(AM_V_GEN)$(MKDIR_P) "$(srcdir)"/pc && \
-	cat "$(srcdir)"/pc/Makefile.tst.prologue > "$(srcdir)"/pc/Makefile.tst && \
-	$(AWK) -f "$(srcdir)"/pc/GenMakefileTst.awk "$(srcdir)"/test/Makefile.in >> "$(srcdir)"/pc/Makefile.tst
+# $(srcdir)/pc/Makefile.tst: test/Makefile.in pc/Makefile.tst.prologue pc/GenMakefileTst.awk
+# 	$(AM_V_GEN)$(MKDIR_P) "$(srcdir)"/pc && \
+# 	cat "$(srcdir)"/pc/Makefile.tst.prologue > "$(srcdir)"/pc/Makefile.tst && \
+# 	$(AWK) -f "$(srcdir)"/pc/GenMakefileTst.awk "$(srcdir)"/test/Makefile.in >> "$(srcdir)"/pc/Makefile.tst
 
 # This is for my development & testing.
 efence: gawk

@@ -56,6 +56,8 @@
 #define __iswctype iswctype
 #define __btowc btowc
 #endif
+#define HAVE_FNMATCH
+#define HAVE_FNMATCH_H
 
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
 #ifdef HAVE_FNMATCH_H

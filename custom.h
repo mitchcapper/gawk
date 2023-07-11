@@ -110,6 +110,7 @@ typedef unsigned long long uint_fast64_t;
 #endif
 #endif
 
+#ifndef _WIN32
 /* Junk for dfa.[ch] */
 /* The __pure__ attribute was added in gcc 2.96.  */
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
@@ -123,6 +124,7 @@ typedef unsigned long long uint_fast64_t;
 #define xicalloc xcalloc
 #define xirealloc xrealloc
 #define ximalloc xmalloc
+#endif
 
 #ifdef USE_PERSISTENT_MALLOC
 #include <stdlib.h>
@@ -137,7 +139,8 @@ typedef unsigned long long uint_fast64_t;
 #define pma_set_root(rootptr)	/* nothing */
 #define pma_errno 0
 #endif /* ! USE_PERSISTENT_MALLOC */
-
+#ifndef _WIN32
 #ifndef HAVE_STRSIGNAL
 char * strsignal(int signal);
 #endif /* ! HAVE_STRSIGNAL */
+#endif
