@@ -1224,4 +1224,26 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 }
 #endif	/* C++ */
 
+
+
+
+
+static inline void *
+emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+
+	if (count == 0)
+		fatal("%s:%d: emalloc called with zero bytes", file, line);
+
+	ret = (void *) malloc(count);
+	if (ret == NULL)
+		fatal(_("%s:%d:%s: %s: cannot allocate %ld bytes of memory: %s"),
+			file, line, where, var, (long) count, strerror(errno));
+
+	return ret;
+}
+
+
+
 #endif /* _GAWK_API_H */

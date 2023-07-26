@@ -120,12 +120,12 @@ AC_CHECK_FUNCS(fdopendir fmod fnmatch getdtablesize \
 		nanosleep select statvfs \
 		GetSystemTimeAsFileTime strptime)
 
-GAWK_FUNC_DIRFD
-GAWK_PREREQ_DIRFD
+#GAWK_FUNC_DIRFD
+#GAWK_PREREQ_DIRFD
 
 dnl checks for compiler characteristics
 AC_C_INLINE
-
+AH_TOP([#include "../config.h"])
 AC_CONFIG_HEADERS([config.h:configh.in])
 AH_BOTTOM([#include "ext_custom.h"])
 

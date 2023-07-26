@@ -68,7 +68,9 @@ mkstemp (char *template)
   return -1;
 }
 #endif
-
+#ifdef _WIN32
+# define chown(x,y,z)  (0)
+#endif
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
 static const char *ext_version = "inplace extension: version 1.0";
@@ -249,7 +251,7 @@ do_inplace_end(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 		gawk_free(bakname);
 	}
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_WIN32)
 	unlink(filename.str_value.str);
 #endif
 

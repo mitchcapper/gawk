@@ -3109,9 +3109,8 @@ func_convert_core_msys_to_w32 ()
 {
   $debug_cmd
 
-  # awkward: cmd appends spaces to result
-  func_convert_core_msys_to_w32_result=`( cmd //c echo "$1" ) 2>/dev/null |
-    $SED -e 's/[ ]*$//' -e "$sed_naive_backslashify"`
+func_convert_core_msys_to_w32_result=$1
+
 }
 #end: func_convert_core_msys_to_w32
 
