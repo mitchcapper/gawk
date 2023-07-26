@@ -63,7 +63,9 @@
 #endif
 #include <unixlib.h>
 #endif
-
+#ifdef _WIN32
+#include <fts_.h>
+#endif
 
 #include <stdio.h>
 #include <assert.h>
@@ -184,7 +186,9 @@ format_mode(unsigned long fmode)
 		int charval;
 	} ftype_map[] = {
 		{ S_IFREG, '-' },	/* redundant */
+#ifndef _WIN32
 		{ S_IFBLK, 'b' },
+#endif		
 		{ S_IFCHR, 'c' },
 		{ S_IFDIR, 'd' },
 #ifdef S_IFSOCK
@@ -371,7 +375,9 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 		const char *type;
 	} ftype_map[] = {
 		{ S_IFREG, "file" },
+#ifndef _WIN32
 		{ S_IFBLK, "blockdev" },
+#endif		
 		{ S_IFCHR, "chardev" },
 		{ S_IFDIR, "directory" },
 #ifdef S_IFSOCK
@@ -405,7 +411,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	array_set_numeric(array, "uid", sbuf->st_uid);
 	array_set_numeric(array, "gid", sbuf->st_gid);
 	array_set_numeric(array, "size", sbuf->st_size);
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_WIN32)
 	array_set_numeric(array, "blocks", (double)((sbuf->st_size +
 		device_blocksize() - 1) / device_blocksize()));
 #else
@@ -414,14 +420,14 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 	array_set_numeric(array, "atime", sbuf->st_atime);
 	array_set_numeric(array, "mtime", sbuf->st_mtime);
 	array_set_numeric(array, "ctime", sbuf->st_ctime);
-
+#ifndef _WIN32
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf->st_mode) || S_ISCHR(sbuf->st_mode)) {
 		array_set_numeric(array, "rdev", sbuf->st_rdev);
 		array_set_numeric(array, "major", major(sbuf->st_rdev));
 		array_set_numeric(array, "minor", minor(sbuf->st_rdev));
 	}
-
+#endif
 #ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
 	array_set_numeric(array, "blksize", sbuf->st_blksize);
 #elif defined(__MINGW32__)

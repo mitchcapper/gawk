@@ -29,7 +29,7 @@
  */
 #include "awk.h"	/* includes config.h for us */
 
-
+#ifndef _WIN32
 #ifndef HAVE_SYSTEM
 #include "missing_d/system.c"
 #endif /* HAVE_SYSTEM */
@@ -117,4 +117,5 @@
 
 #ifndef HAVE_STRSIGNAL
 #include "missing_d/strsignal.c"
+#endif
 #endif

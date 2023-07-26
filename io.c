@@ -3069,7 +3069,11 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 
 	emalloc(path, char *, pi->max_pathlen + strlen(src) + 1);
 	for (i = 0; pi->awkpath[i] != NULL; i++) {
-		if (strcmp(pi->awkpath[i], "./") == 0 || strcmp(pi->awkpath[i], ".") == 0)
+		if (strcmp(pi->awkpath[i], "./") == 0
+#ifdef _WIN32
+		|| strcmp(pi->awkpath[i], ".\\") == 0
+#endif
+		 || strcmp(pi->awkpath[i], ".") == 0)
 			*path = '\0';
 		else
 			strcpy(path, pi->awkpath[i]);

@@ -14,8 +14,9 @@
 #endif
 
 #include <stdio.h>
+#ifndef _WIN32
 #include <pwd.h>
-
+#endif
 #if defined (STDC_HEADERS)
 #include <stdlib.h>
 #endif
@@ -24,7 +25,7 @@ int
 main(int argc, char **argv)
 {
     struct passwd *p;
-
+#ifndef _WIN32
     while ((p = getpwent()) != NULL)
 #ifdef HAVE_STRUCT_PASSWD_PW_PASSWD
         printf("%s:%s:%ld:%ld:%s:%s:%s\n",
@@ -37,5 +38,6 @@ main(int argc, char **argv)
 #endif
 
     endpwent();
+#endif
     return 0;
 }

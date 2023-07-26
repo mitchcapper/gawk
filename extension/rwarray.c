@@ -43,7 +43,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_WIN32)
 #include <winsock2.h>
 #include <stdint.h>
 #else
