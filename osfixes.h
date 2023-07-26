@@ -1,7 +1,7 @@
 //shared between bash and gawk
 #pragma once
 #ifdef _WIN32
-#include <config.h>
+#include "config.h"
 //with newer windows sdks the wrong header order in some files results in a SocketNotificationRetrieveEvents defined multiple times error, this is the easiest solution ive seen
 #ifndef WINSOCK_INCLUDED
 #define WINSOCK_INCLUDED 1
@@ -69,6 +69,16 @@
 #define		NOFLSH		0x80000000
 #ifndef GAWK
 #include "term.h"
+#else
+#ifndef DLFCN_H
+#define DLFCN_H
+
+#define RTLD_LAZY 1
+extern void *dlopen (const char *, int);
+extern int   dlclose (void *);
+extern void *dlsym (void *, const char *);
+extern char *dlerror (void);
+#endif	/* DLFCN_H */
 #endif
 #if ! defined(tchars)
 struct   tchars {
