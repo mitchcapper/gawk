@@ -11,6 +11,7 @@
 #include "term.h"
 #include "general.h"
 #endif
+#include <stdio.h>
 #define ENV_ALLOC_CNT 1024
 #define FAKE_EXIT_STATUS_UNDEFINED 2424242 //exit codes should be 1 byte only
 #ifndef FALSE
@@ -155,7 +156,96 @@ void ExecDestroy(HandleExec** exec_ptr) {
 	free(exec);
 	exec_ptr = -1;
 }
-#endif // !GAWK]6
+
+#else
+
+
+#include <winerror.h>
+#include <dlfcn.h>
+
+static DWORD last_err;
+
+void *
+dlopen (const char *file, int mode)
+{
+  char dllfn[MAX_PATH], *p;
+  HANDLE dllhandle;
+
+  if (mode != RTLD_LAZY)
+    {
+      errno = EINVAL;
+      last_err = ERROR_INVALID_PARAMETER;
+      return NULL;
+    }
+
+  /* MSDN says to be sure to use backslashes in the DLL file name.  */
+  strcpy (dllfn, file);
+  for (p = dllfn; *p; p++)
+    if (*p == '/')
+      *p = '\\';
+
+  dllhandle = LoadLibrary (dllfn);
+  if (!dllhandle)
+    last_err = GetLastError ();
+
+  return dllhandle;
+}
+
+char *
+dlerror (void)
+{
+  static char errbuf[1024];
+  DWORD ret;
+
+  if (!last_err)
+    return NULL;
+
+  ret = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM
+		       | FORMAT_MESSAGE_IGNORE_INSERTS,
+		       NULL, last_err, 0, errbuf, sizeof (errbuf), NULL);
+  while (ret > 0 && (errbuf[ret - 1] == '\n' || errbuf[ret - 1] == '\r'))
+    --ret;
+
+  errbuf[ret] = '\0';
+  if (!ret)
+    sprintf (errbuf, "Error code %lu", last_err);
+
+  last_err = 0;
+  return errbuf;
+}
+
+int
+dlclose (void *handle)
+{
+  if (!handle || handle == INVALID_HANDLE_VALUE)
+    return -1;
+  if (!FreeLibrary (handle))
+    return -1;
+
+  return 0;
+}
+
+void *
+dlsym (void *handle, const char *name)
+{
+  FARPROC addr = NULL;
+
+  if (!handle || handle == INVALID_HANDLE_VALUE)
+    {
+      last_err = ERROR_INVALID_PARAMETER;
+      return NULL;
+    }
+
+  addr = GetProcAddress (handle, name);
+  if (!addr)
+    last_err = GetLastError ();
+
+  return (void *)addr;
+}
+
+#endif // !GAWK
+
+
 int kill(pid_t pid, int sig) {
 	if (sig == SIGINT)
 		return GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid);//as long as we have created the process with CREATE_NEW_PROCESS_GROUP  it should
