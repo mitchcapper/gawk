@@ -23,7 +23,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-
+#ifdef _WIN32
+#define HAVE_CONFIG_H
+#endif
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -35,7 +37,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-
+#ifdef _WIN32
+#include <sys/select.h>
+#include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 

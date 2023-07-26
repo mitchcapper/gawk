@@ -51,13 +51,13 @@
 #include <limits.h>
 #endif
 
-#ifdef HAVE_DIRENT_H
+#if defined(HAVE_DIRENT_H) || defined(_WIN32)
 #include <dirent.h>
 #else
 #error Cannot compile the readdir extension on this system!
 #endif
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -147,7 +147,7 @@ ftype(struct dirent *entry, const char *dirname)
 static long long
 get_inode(struct dirent *entry, const char *dirname)
 {
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_WIN32)
 	char fname[PATH_MAX];
 	HANDLE fh;
 	BOOL ok;
@@ -268,7 +268,7 @@ dir_can_take_file(const awk_input_buf_t *iobuf)
  * We can assume that dir_can_take_file just returned true,
  * and no state has changed since then.
  */
-
+#define	emalloc2(var,varname,ty,x,str)	(void) (var = (ty) emalloc_real((size_t)(x), str, varname, __FILE__, __LINE__))
 static awk_bool_t
 dir_take_control_of(awk_input_buf_t *iobuf)
 {
@@ -294,7 +294,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 		return awk_false;
 	}
 
-	emalloc(the_dir, open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
+	emalloc2(the_dir,"the_dir", open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
 	the_dir->dp = dp;
 	/* pre-populate the field_width struct with constant values: */
 	the_dir->fw.use_chars = awk_false;
@@ -303,7 +303,7 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	the_dir->fw.fields[1].skip = 1;	/* single '/' separator */
 	the_dir->fw.fields[2].skip = 1;	/* single '/' separator */
 	size = sizeof(struct dirent) + 21 /* max digits in inode */ + 2 /* slashes */;
-	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
+	emalloc2(the_dir->buf,"the_dir->buf", char *, size, "dir_take_control_of");
 
 	iobuf->opaque = the_dir;
 	iobuf->get_record = dir_get_record;

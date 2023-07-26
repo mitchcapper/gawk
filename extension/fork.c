@@ -92,7 +92,9 @@ do_fork(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 					lintwarn(ext_id, _("fork: PROCINFO is not an array!"));
 			} else {
 				array_set_numeric(procinfo.array_cookie, "pid", getpid());
+#ifndef _WIN32
 				array_set_numeric(procinfo.array_cookie, "ppid", getppid());
+#endif				
 			}
 		}
 	}
@@ -113,7 +115,9 @@ do_waitpid(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	assert(result != NULL);
 
 	if (get_argument(0, AWK_NUMBER, &pid)) {
+#ifndef _WIN32
 		options = WNOHANG|WUNTRACED;
+#endif		
 		ret = waitpid(pid.num_value, NULL, options);
 		if (ret < 0)
 			update_ERRNO_int(errno);
@@ -132,8 +136,11 @@ do_wait(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 	int ret;
 
 	assert(result != NULL);
-
+#ifndef _WIN32
 	ret = wait(NULL);
+#else
+	ret = -1;
+#endif	
 	if (ret < 0)
 		update_ERRNO_int(errno);
 
@@ -142,9 +149,12 @@ do_wait(int nargs, awk_value_t *result, struct awk_ext_func *unused)
 }
 
 static awk_ext_func_t func_table[] = {
+#ifndef _WIN32
 	{ "fork", do_fork, 0, 0, awk_false, NULL },
-	{ "waitpid", do_waitpid, 1, 1, awk_false, NULL },
 	{ "wait", do_wait, 0, 0, awk_false, NULL },
+#endif		
+	{ "waitpid", do_waitpid, 1, 1, awk_false, NULL },
+
 };
 
 /* define the dl_load function using the boilerplate macro */

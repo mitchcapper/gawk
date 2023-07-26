@@ -24,8 +24,7 @@
 
 ## Process this file with automake to produce Makefile.in.
 
-AM_CPPFLAGS = -I$(srcdir)/..
-
+AM_CPPFLAGS = -I$(srcdir)/.. -I$(srcdir)/../lib
 # This variable insures that aclocal runs
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I ../m4
@@ -50,7 +49,7 @@ pkgextension_LTLIBRARIES =	\
 noinst_LTLIBRARIES =	\
 	testext.la
 
-MY_MODULE_FLAGS = -module -avoid-version -no-undefined
+MY_MODULE_FLAGS = -module -avoid-version -no-undefined -Xlinker ../lib/libgawk.a -Xlinker "/nologo"
 # On Cygwin, gettext requires that we link with -lintl
 MY_LIBS = $(LTLIBINTL)
 
