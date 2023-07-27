@@ -33,6 +33,7 @@
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
 #endif
+#include <string.h>
 
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
@@ -881,7 +882,26 @@ init_vars()
 		load_procinfo();
 	load_environ();
 }
-
+#define WIN32_PROGRAM_DATA_NAME "ProgramData"
+int ExpandVarWithProgramData(char* buffer, size_t buffer_size, const char * val) {
+#ifdef _WIN32
+	const char* PROG_DATA_FIND_NAME = "%"WIN32_PROGRAM_DATA_NAME"%";
+	const char* start_at = strcasestr( val, PROG_DATA_FIND_NAME);
+	if (start_at) { //expand this one env var
+		const char* prog_data_path = getenv(WIN32_PROGRAM_DATA_NAME);
+		if (!prog_data_path || !prog_data_path[0])
+			prog_data_path = "/ProgramData"; // not sure if c:/ProgramData is really any better lets just assume driveroot
+		strncpy_s(buffer, buffer_size, val, (start_at - val) / sizeof(char));
+		strcat_s(buffer, buffer_size, prog_data_path);
+		strcat_s(buffer, buffer_size, start_at + (strlen(PROG_DATA_FIND_NAME) * sizeof(char)));
+		return 1;
+	}
+	else {
+		strcpy_s(buffer, buffer_size, val);
+		return 0;
+	}
+#endif
+}
 /* path_environ --- put path variable into environment if not already there */
 
 static void
@@ -904,6 +924,9 @@ path_environ(const char *pname, const char *dflt)
 	 * If original value was the empty string, set it to
 	 * the default value.
 	 */
+	char buffer[_MAX_PATH];
+	if (ExpandVarWithProgramData(buffer, sizeof(buffer), val))
+		val = buffer;
 	if ((*aptr)->stlen == 0) {
 		unref(*aptr);
 		*aptr = make_string(val, strlen(val));

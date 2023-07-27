@@ -2973,7 +2973,7 @@ static path_info pi_awklibpath = {
 };
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
-
+extern int ExpandVarWithProgramData(char* buffer, size_t buffer_size, const char* val);
 static void
 init_awkpath(path_info *pi)
 {
@@ -2984,8 +2984,12 @@ init_awkpath(path_info *pi)
 	int max_path;		/* (# of allocated paths)-1 */
 
 	pi->max_pathlen = 0;
-	if ((path = getenv(pi->envname)) == NULL || *path == '\0')
+	char buffer[_MAX_PATH];
+	if ((path = getenv(pi->envname)) == NULL || *path == '\0') {
 		path = pi->dfltp[0];
+		if (ExpandVarWithProgramData(buffer, sizeof(buffer), path))
+			path = buffer;
+	}
 
 	/* count number of separators */
 	for (max_path = 0, p = (char *) path; *p; p++)

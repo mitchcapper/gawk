@@ -84,6 +84,18 @@ static awk_bool_t (*init_func)(void) = init_readdir;
 int plugin_is_GPL_compatible;
 
 /* data type for the opaque pointer: */
+static inline void *
+emalloc_real(size_t count, const char *where, const char *var, const char *file, int line)
+{
+	void *ret;
+	if (count == 0)
+		fatal(ext_id, "%s:%d: emalloc called with zero bytes", file, line);
+	ret = (void *) malloc(count);
+	if (ret == NULL)
+		fatal(ext_id, _("%s:%d:%s: %s: cannot allocate %ld bytes of memory: %s"),
+			file, line, where, var, (long) count, strerror(errno));
+	return ret;
+}
 
 typedef struct open_directory {
 	DIR *dp;
