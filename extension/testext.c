@@ -45,6 +45,10 @@
 #endif
 
 #include "gawkapi.h"
+#ifdef _WIN32
+#define GAWK
+#include <osfixes.h>
+#endif
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t ext_id;
@@ -55,7 +59,7 @@ int plugin_is_GPL_compatible;
 static void fill_in_array(awk_value_t *value);
 static int populate_array(awk_array_t);
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_WIN32)
 unsigned int
 getuid (void)
 {
